@@ -1,0 +1,412 @@
+<!DOCTYPE html><html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Game Detektif 100 Level</title>
+<style>
+  /* ===== THEME ===== */
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Sans",sans-serif}
+  body.theme-dark{ --bg:#0f172a; --fg:#e5e7eb; --card:#111827; --muted:#9ca3af; --primary:#38bdf8; --accent:#22c55e; --danger:#ef4444; --warn:#f59e0b; --ok:#10b981; --line:#1f2937 }
+  body.theme-light{ --bg:#f5f7fb; --fg:#0b1220; --card:#ffffff; --muted:#6b7280; --primary:#0369a1; --accent:#15803d; --danger:#b91c1c; --warn:#b45309; --ok:#047857; --line:#e5e7eb }*{box-sizing:border-box} body{background:var(--bg);color:var(--fg)} header{position:sticky;top:0;z-index:5;backdrop-filter:saturate(180%) blur(8px);background:rgba(0,0,0,.0)} .bar{border-bottom:1px solid var(--line);background:color-mix(in srgb, var(--bg) 85%, transparent)} .wrap{max-width:1080px;margin:0 auto;padding:16px} h1{font-size:24px;margin:0} .sub{color:var(--muted);font-size:14px} .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px} button, select, input[type="search"], input[type="file"]{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px} button:hover{filter:brightness(0.98)} .pill{padding:2px 10px;border-radius:999px;background:color-mix(in srgb, var(--bg) 90%, transparent);border:1px solid var(--line);color:var(--muted);font-size:12px;white-space:nowrap} main{padding:24px 0} .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px} .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px} .level-btn{display:flex;flex-direction:column;gap:6px;align-items:flex-start;cursor:pointer} .level-num{font-weight:700} .badge{font-size:11px;border:1px solid var(--line);border-radius:8px;padding:2px 6px;color:var(--muted)} .badge.ok{border-color:color-mix(in srgb, var(--ok) 40%, var(--line));color:color-mix(in srgb, var(--ok) 70%, var(--fg));background:color-mix(in srgb, var(--ok) 10%, transparent)} .badge.lock{border-color:var(--line);color:var(--muted);background:color-mix(in srgb, var(--bg) 86%, transparent)} .panel{display:none} .panel.active{display:block} .story{background:color-mix(in srgb, var(--bg) 90%, transparent);border:1px solid var(--line);border-radius:14px;padding:16px;line-height:1.6} .story h3{margin:0 0 8px;font-size:18px} .row{display:grid;grid-template-columns:1fr;gap:12px} @media(min-width:900px){.row{grid-template-columns:1.2fr .8fr}} .suspects{display:grid;grid-template-columns:1fr;gap:10px} .sus{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--card);cursor:pointer} .sus.selected{outline:2px solid var(--primary)} .sus h4{margin:0 0 6px} .clues{display:grid;grid-template-columns:1fr;gap:10px} .clue{border:1px dashed var(--line);border-radius:10px;padding:10px;color:color-mix(in srgb, var(--fg) 80%, var(--muted));background:var(--card)} .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px} .result{margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--line)} .result.ok{background:color-mix(in srgb, var(--ok) 12%, transparent);color:color-mix(in srgb, var(--ok) 70%, var(--fg));border-color:color-mix(in srgb, var(--ok) 40%, var(--line))} .result.err{background:color-mix(in srgb, var(--danger) 12%, transparent);color:color-mix(in srgb, var(--danger) 70%, var(--fg));border-color:color-mix(in srgb, var(--danger) 40%, var(--line))} .muted{color:var(--muted)} .foot{margin-top:18px;border-top:1px dashed var(--line);padding-top:12px;color:color-mix(in srgb, var(--fg) 80%, var(--muted));font-size:12px} .hidden{display:none} .title{display:flex;justify-content:space-between;align-items:center;gap:10px} .title small{color:var(--muted)} .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:color-mix(in srgb, var(--fg) 80%, var(--muted))} .avatar{display:flex;align-items:center;gap:10px;margin-bottom:10px} .avatar svg{width:44px;height:44px;border-radius:50%;display:block} </style>
+
+</head>
+<body class="theme-dark">
+  <header class="bar">
+    <div class="wrap">
+      <div class="title">
+        <div>
+          <h1>Detektif 100 Level</h1>
+          <div class="sub">Cerita, lokasi, dan kasus berbeda di setiap level. Progres, skor, dan waktu tersimpan di perangkat.</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <span class="pill" id="progress-pill">0/100 Selesai</span>
+          <span class="pill" id="score-pill">Skor 0</span>
+          <span class="pill" id="timer-pill">Waktu 00:00</span>
+        </div>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="search" placeholder="Cari level / detektif / lokasi / kasus" />
+        <button id="btn-random">Main Acak</button>
+        <button id="btn-reset">Reset Progres</button>
+        <button id="btn-export">Ekspor Progres</button>
+        <input id="file-import" type="file" accept="application/json" class="hidden" />
+        <button id="btn-import">Impor Progres</button>
+        <button id="btn-theme">Tema: Gelap</button>
+        <button id="btn-back" class="hidden">Kembali ke Daftar</button>
+      </div>
+    </div>
+  </header>  <main class="wrap">
+    <!-- Panel Menu -->
+    <section id="panel-menu" class="panel active">
+      <div class="grid" id="grid-levels"></div>
+    </section><!-- Panel Play -->
+<section id="panel-play" class="panel">
+  <div class="row">
+    <div>
+      <div class="avatar" id="avatar"></div>
+      <div class="story" id="story"></div>
+      <div class="clues" id="clues"></div>
+      <div class="actions">
+        <button id="btn-submit">Kunci Jawaban</button>
+        <button id="btn-next">Level Berikutnya</button>
+      </div>
+      <div id="result" class="result hidden"></div>
+      <div class="foot" id="foot"></div>
+    </div>
+    <div>
+      <div class="suspects" id="suspects"></div>
+    </div>
+  </div>
+</section>
+
+  </main><script>
+(function(){
+  // ===== Utilities =====
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+  function pad2(n){ return (n<10?'0':'')+n; }
+  function fmtTime(sec){ sec=Math.max(0,Math.floor(sec)); const m=Math.floor(sec/60), s=sec%60; return pad2(m)+":"+pad2(s); }
+
+  // Simple deterministic RNG per level for reproducibility
+  function LCG(seed){ let s = seed >>> 0; return function(){ s = (s*1664525 + 1013904223) >>> 0; return s/4294967296; }; }
+  function pick(rand, arr){ return arr[Math.floor(rand()*arr.length)]; }
+  function pickMany(rand, arr, k, exclude=new Set()){
+    const pool = arr.filter(x => !exclude.has(x));
+    const res = [];
+    while(res.length<k && pool.length){
+      const idx = Math.floor(rand()*pool.length);
+      res.push(pool.splice(idx,1)[0]);
+    }
+    return res;
+  }
+
+  // ===== Unique Generators (10 x 10 = 100) =====
+  const FIRST = ['Raka','Bima','Damar','Rendra','Farhan','Aditya','Gilang','Bayu','Arga','Rafi'];
+  const LAST  = ['Pratama','Wijaya','Saputra','Mahendra','Ramadhan','Fauzan','Nugraha','Wicaksono','Setiawan','Putra'];
+  const VENUE = ['Perpustakaan','Laboratorium','Studio Teater','Pelabuhan','Bandara','Museum','Gudang Logistik','Pasar Malam','Gedung Arsip','Kafe 24 Jam'];
+  const DIST  = ['Cendekia','Mandiri','Harapan','Nusantara','Merdeka','Bahari','Angkasa','Arunika','Kemuning','Sakura'];
+  const VERB  = ['Pencurian','Perusakan','Pemalsuan','Penggelapan','Pembobolan','Sabotase','Peracunan','Penyusupan','Pemerasan','Penculikan'];
+  const OBJ   = ['Naskah Arsip','Server Kampus','Artefak Museum','Data Pasien','Drone Keamanan','Uang Kas','Hard Drive','Obat Langka','Soal Ujian','Laptop Proyek'];
+
+  function idxPair(n){ const i=(n-1)%10, j=Math.floor((n-1)/10)%10; return [i,j]; }
+  function getDetective(n){ const [i,j]=idxPair(n); return FIRST[i]+" "+LAST[j]; }
+  function getLocation(n){ const [i,j]=idxPair(n); return VENUE[i]+" "+DIST[j]; }
+  function getCrime(n){ const [i,j]=idxPair(n); return VERB[i]+" "+OBJ[j]; }
+
+  // ===== Other Data Pools =====
+  const STYLES = ['observasional','forensik','profiling','analitik','interogasi','rekonstruksi','undercover','deduktif'];
+  const CLIENTS = ['guru','mahasiswa','dokter','arsitek','barista','satpam pelabuhan','fotografer','pedagang pasar','pustakawan','kurator museum','teknisi IT','pilot','pramugari','kapten kapal','polisi lalu lintas','wali kelas','kepala desa','dosen','nelayan','petani','pengrajin perak','aktor teater','penulis','pengusaha kafe','kurir','manajer gudang'];
+  const SUSPECT_POOL = [
+    'Andi','Budi','Cici','Dewi','Eka','Fero','Gita','Hadi','Indra','Joko','Kiki','Lani','Miko','Nora','Omar','Putra','Qori','Riko','Sinta','Tono','Umar','Vera','Wawan','Xena','Yusuf','Zara',
+    'Anwar','Bagus','Celine','Dian','Evan','Fani','Guntur','Hanafi','Intan','Jamal','Karin','Lutfi','Maya','Niko','Olive','Prita','Qila','Rama','Sari','Teguh','Uli','Vino','Wibi','Yani','Zidan',
+    'Arman','Bisma','Chandra','Daffa','Elma','Fajar','Gio','Hesty','Imam','Jihan','Kamal','Laras','Manda','Nayla','Owen','Pandu','Qomar','Rina','Seno','Tari','Ute','Vivi','Wira','Yola','Zaki'
+  ];
+  const ATTRIBUTES = ['kidal','alergi kacang','bertato naga','sepatu 42','parfum melati','kacamata minus','bekas cat biru di tangan','luka lutut','penyuka kopi hitam','pernah operasi jari'];
+  const CLUE_MAP = {
+    'kidal': { clue: 'Jejak pada gagang pintu menunjukkan arah tarikan tangan kiri.', explain: (name) => `Pola bekas pegangan dan arah tarikan konsisten dengan orang kidal. Hanya ${name} yang kidal.` },
+    'alergi kacang': { clue: 'Ditemukan kemasan antihistamin yang baru dipakai di dekat lokasi.', explain: (name) => `Antihistamin diminum setelah paparan alergen. Hanya ${name} yang punya alergi kacang.` },
+    'bertato naga': { clue: 'Serpihan tinta hijau khas tato ditemukan di sarung tangan yang tertinggal.', explain: (name) => `Serpihan tinta cocok dengan tato naga. Hanya ${name} yang bertato naga.` },
+    'sepatu 42': { clue: 'Jejak sepatu ukuran 42 jelas di lantai yang baru dipel.', explain: (name) => `Pengukuran outsole menunjuk ukuran 42. Dari tersangka, ukuran itu hanya milik ${name}.` },
+    'parfum melati': { clue: 'Aroma melati pekat tercium pada berkas yang dipegang pelaku.', explain: (name) => `Aroma spesifik melati kuat. Di antara tersangka, hanya ${name} yang menggunakan parfum melati.` },
+    'kacamata minus': { clue: 'Refleksi CCTV menampakkan bingkai kacamata tebal saat pelaku menoleh.', explain: (name) => `Bentuk bingkai tebal menunjukkan kacamata minus. Hanya ${name} yang berkacamata minus.` },
+    'bekas cat biru di tangan': { clue: 'Noda cat biru menempel pada pegangan lemari bukti.', explain: (name) => `Noda cat biru sama dengan cat di tangan ${name}.` },
+    'luka lutut': { clue: 'Pelaku terekam sedikit pincang saat berlari menjauh.', explain: (name) => `Gaya berjalan pincang sesuai cedera lutut yang dimiliki ${name}.` },
+    'penyuka kopi hitam': { clue: 'Cangkir kopi tanpa gula masih hangat tertinggal di sudut ruangan.', explain: (name) => `Preferensi kopi hitam tanpa gula cocok dengan kebiasaan ${name}.` },
+    'pernah operasi jari': { clue: 'Sidik jari di TKP tampak terputus pada satu ruas.', explain: (name) => `Pola sidik jari terputus lazim pada bekas operasi. Itu cocok dengan riwayat ${name}.` }
+  };
+  const DECOY_CLUES = [
+    'Cuaca hujan deras membuat sebagian jejak memudar.',
+    'Lampu lorong mati sehingga area gelap saat kejadian.',
+    'Alarm pintu berbunyi 3 menit setelah aktivitas mencurigakan.',
+    'Sebagian kamera CCTV telah disemprot cat hitam.',
+    'Ada bekas sarung tangan lateks di tempat sampah.',
+    'Komputer resepsionis belum diperbarui antivirus.',
+    'Seseorang memesan ojek daring di lokasi 10 menit sebelumnya.',
+    'Kunci duplikat hilang sejak seminggu lalu.',
+    'Lantai baru dipel satu jam sebelum kejadian.',
+    'Penjaga malam mengambil istirahat tepat pukul 02.00.'
+  ];
+
+  // ===== State & Storage =====
+  const STORAGE_KEY = 'detektif100_progress_v2';
+  const state = {
+    currentLevel: 1,
+    selectedIndex: null,
+    wrongAttempts: 0,
+    startAt: 0,
+    timerRef: null,
+    progress: loadProgress(),
+  };
+  function loadProgress(){
+    try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { solved:{}, totalScore:0, theme:'dark' }; }
+    catch(e){ return { solved:{}, totalScore:0, theme:'dark' }; }
+  }
+  function saveProgress(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state.progress)); }
+
+  // ===== Theme =====
+  function applyTheme(){
+    const isDark = state.progress.theme!=='light';
+    document.body.classList.toggle('theme-dark', isDark);
+    document.body.classList.toggle('theme-light', !isDark);
+    $('#btn-theme').textContent = 'Tema: ' + (isDark ? 'Gelap' : 'Terang');
+  }
+
+  // ===== Avatar SVG =====
+  function avatarSVG(name, n){
+    const rand = LCG(7777+n*13);
+    const colors = ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#22d3ee','#f472b6','#4ade80'];
+    const bg = colors[Math.floor(rand()*colors.length)];
+    const fg = '#0b1220';
+    const initials = name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+    const shape = Math.floor(rand()*3); // 0 circle, 1 square, 2 triangle overlay
+    const overlay = shape===0 ? `<circle cx="32" cy="32" r="28" fill="none" stroke="${fg}22" stroke-width="6" />`
+                  : shape===1 ? `<rect x="10" y="10" width="44" height="44" rx="6" fill="${fg}14" />`
+                  : `<polygon points="32,6 58,58 6,58" fill="${fg}14" />`;
+    return `
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs><clipPath id="r"><rect x="0" y="0" width="64" height="64" rx="32"/></clipPath></defs>
+        <rect width="64" height="64" fill="${bg}" clip-path="url(#r)"/>
+        ${overlay}
+        <text x="50%" y="54%" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="24" font-weight="700" fill="${fg}">${initials}</text>
+      </svg>`;
+  }
+
+  // ===== Level Generator =====
+  function generateLevel(n){
+    const rand = LCG(n*9871 + 13);
+    const detective = getDetective(n);
+    const style = pick(rand, STYLES);
+    const client = pick(rand, CLIENTS);
+    const location = getLocation(n);
+    const crime = getCrime(n);
+
+    // Attribute used as smoking gun
+    const attr = pick(rand, ATTRIBUTES);
+
+    // Suspects
+    const suspects = pickMany(rand, SUSPECT_POOL, 3);
+    const culpritIdx = Math.floor(rand()*3);
+
+    // Assign attributes to suspects
+    const attrsPool = ATTRIBUTES.filter(a => a!==attr);
+    const susObjs = suspects.map((name, i) => ({ name, attrs: [] }));
+    // Give culprit the key attribute plus one random flavor
+    susObjs[culpritIdx].attrs = [attr, pick(rand, attrsPool)];
+    // Others get two random non-key attributes
+    for(let i=0;i<3;i++){
+      if(i===culpritIdx) continue;
+      const a1 = pick(rand, attrsPool);
+      let a2 = pick(rand, attrsPool);
+      let guard=0; while((a2===a1 || a2===attr) && guard<8){ a2 = pick(rand, attrsPool); guard++; }
+      susObjs[i].attrs = [a1,a2];
+    }
+
+    // Clues
+    const smoking = CLUE_MAP[attr].clue;
+    const decoys = pickMany(rand, DECOY_CLUES, 2);
+
+    // Title and short brief
+    const title = `Level ${n} — Kasus ${crime}`;
+    const brief = `Detektif ${detective}, bergaya ${style}, didatangi ${client} di ${location}. Terjadi ${crime}. Ada tiga tersangka di sekitar lokasi.`;
+
+    const question = 'Siapa pelakunya berdasarkan petunjuk?';
+
+    return {
+      n, title, brief, detective, style, client, location, crime,
+      suspects: susObjs, culpritIdx, smokingAttr: attr, smoking,
+      clues: [decoys[0], decoys[1], smoking], question
+    };
+  }
+
+  // ===== UI Renderers =====
+  function renderGrid(filter=""){
+    const grid = $('#grid-levels');
+    grid.innerHTML = '';
+    const term = filter.trim().toLowerCase();
+    let solvedCount = 0; let totalScore = 0;
+    for(let i=1;i<=100;i++){
+      const detective = getDetective(i);
+      const location = getLocation(i);
+      const crime = getCrime(i);
+      const title = `Level ${i} — ${crime}`;
+      const isSolved = !!state.progress.solved[i];
+      if(isSolved){ solvedCount++; totalScore += (state.progress.solved[i].score||0); }
+      if(term){
+        const hay = `${title} ${detective} ${location}`.toLowerCase();
+        if(!hay.includes(term)) continue;
+      }
+      const div = document.createElement('button');
+      div.className = 'card level-btn';
+      div.setAttribute('data-level', i);
+      div.innerHTML = `
+        <div class="level-num">Level ${i}</div>
+        <div class="muted">Detektif ${detective}</div>
+        <div class="muted">${location}</div>
+        <div><span class="badge ${isSolved?'ok':'lock'}">${isSolved?'Selesai':'Belum'}</span></div>
+      `;
+      div.addEventListener('click', () => openLevel(i));
+      grid.appendChild(div);
+    }
+    $('#progress-pill').textContent = `${solvedCount}/100 Selesai`;
+    state.progress.totalScore = totalScore; saveProgress();
+    $('#score-pill').textContent = `Skor ${totalScore}`;
+  }
+
+  function openLevel(n){
+    state.currentLevel = n;
+    state.selectedIndex = null;
+    state.wrongAttempts = 0;
+    $('#panel-menu').classList.remove('active');
+    $('#panel-play').classList.add('active');
+    $('#btn-back').classList.remove('hidden');
+
+    const lv = generateLevel(n);
+
+    $('#avatar').innerHTML = avatarSVG(lv.detective, n) + `<div><div class="muted">Detektif</div><div style="font-weight:700">${lv.detective}</div></div>`;
+    $('#story').innerHTML = `<h3>${lv.title}</h3><p>${lv.brief}</p>`;
+
+    const clues = $('#clues'); clues.innerHTML = '';
+    lv.clues.forEach((c,i)=>{
+      const div = document.createElement('div');
+      div.className = 'clue';
+      div.textContent = `Petunjuk ${i+1}: ${c}`;
+      clues.appendChild(div);
+    });
+
+    const sus = $('#suspects'); sus.innerHTML = '';
+    lv.suspects.forEach((s,idx)=>{
+      const card = document.createElement('div');
+      card.className = 'sus';
+      card.innerHTML = `<h4>${s.name}</h4><div class="muted">Ciri: ${s.attrs.join(', ')}</div>`;
+      card.addEventListener('click',()=>selectSuspect(idx, card));
+      sus.appendChild(card);
+    });
+
+    $('#result').className = 'result hidden';
+    $('#result').textContent = '';
+    $('#foot').innerHTML = `<span class="muted">Pertanyaan: ${lv.question}</span>`;
+
+    startTimer();
+  }
+
+  function selectSuspect(idx, el){
+    state.selectedIndex = idx;
+    $$('#suspects .sus').forEach(x=>x.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  // ===== Scoring & Timer =====
+  function startTimer(){
+    state.startAt = Date.now();
+    $('#timer-pill').textContent = 'Waktu 00:00';
+    if(state.timerRef) clearInterval(state.timerRef);
+    state.timerRef = setInterval(()=>{
+      const sec = (Date.now()-state.startAt)/1000;
+      $('#timer-pill').textContent = 'Waktu ' + fmtTime(sec);
+    }, 300);
+  }
+  function stopTimer(){ if(state.timerRef){ clearInterval(state.timerRef); state.timerRef=null; } }
+
+  function computeScore(elapsed, wrong){
+    const base = 100; // maksimal
+    const timePenalty = Math.floor(elapsed); // 1 poin per detik
+    const wrongPenalty = wrong*30; // salah mengurangi 30
+    const score = Math.max(10, base - timePenalty - wrongPenalty);
+    return score;
+  }
+
+  function submitAnswer(){
+    const lv = generateLevel(state.currentLevel);
+    if(state.selectedIndex==null){ showResult('Pilih salah satu tersangka terlebih dahulu.', false, true); return; }
+    const correct = state.selectedIndex === lv.culpritIdx;
+    if(correct){
+      const elapsed = (Date.now()-state.startAt)/1000;
+      stopTimer();
+      const newScore = computeScore(elapsed, state.wrongAttempts);
+
+      const prev = state.progress.solved[lv.n];
+      if(!prev || newScore > (prev.score||0)){
+        state.progress.solved[lv.n] = { at: Date.now(), time_sec: Math.floor(elapsed), score: newScore };
+      }
+      saveProgress();
+      const culprit = lv.suspects[lv.culpritIdx].name;
+      const expl = CLUE_MAP[lv.smokingAttr].explain(culprit);
+      showResult(`Benar. Pelaku: ${culprit}. ${expl}`, true);
+      renderGrid($('#search').value);
+    }else{
+      state.wrongAttempts++;
+      showResult('Belum tepat. Cocokkan ciri dengan petunjuk kunci dan coba lagi.', false);
+    }
+  }
+
+  function showResult(text, ok, isWarn){
+    const box = $('#result');
+    box.className = 'result ' + (ok ? 'ok' : (isWarn ? '' : 'err'));
+    box.textContent = text;
+    box.classList.remove('hidden');
+  }
+
+  function nextLevel(){
+    // prefer next unsolved; if none, putar
+    for(let i=state.currentLevel+1;i<=100;i++){ if(!state.progress.solved[i]){ openLevel(i); return; } }
+    for(let i=1;i<=state.currentLevel;i++){ if(!state.progress.solved[i]){ openLevel(i); return; } }
+    const n = state.currentLevel>=100 ? 1 : state.currentLevel+1; openLevel(n);
+  }
+
+  function backToMenu(){ stopTimer(); $('#panel-play').classList.remove('active'); $('#panel-menu').classList.add('active'); $('#btn-back').classList.add('hidden'); }
+
+  function resetProgress(){
+    if(confirm('Yakin reset semua progres?')){
+      state.progress = { solved: {}, totalScore: 0, theme: state.progress.theme };
+      saveProgress();
+      renderGrid($('#search').value);
+    }
+  }
+
+  // ===== Export / Import =====
+  function exportProgress(){
+    const data = JSON.stringify(state.progress, null, 2);
+    const blob = new Blob([data], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'detektif100_progress.json'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  }
+  function importProgress(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const obj = JSON.parse(reader.result);
+        if(!obj || typeof obj!== 'object' || !obj.solved){ alert('File tidak valid.'); return; }
+        state.progress = { solved: obj.solved||{}, totalScore: obj.totalScore||0, theme: obj.theme||state.progress.theme };
+        saveProgress();
+        applyTheme();
+        renderGrid($('#search').value);
+        alert('Progres berhasil diimpor.');
+      }catch(e){ alert('Gagal membaca file.'); }
+    };
+    reader.readAsText(file);
+  }
+
+  // ===== Events =====
+  $('#btn-submit').addEventListener('click', submitAnswer);
+  $('#btn-next').addEventListener('click', nextLevel);
+  $('#btn-back').addEventListener('click', backToMenu);
+  $('#btn-reset').addEventListener('click', resetProgress);
+  $('#btn-random').addEventListener('click', ()=>{
+    const unsolved = []; for(let i=1;i<=100;i++) if(!state.progress.solved[i]) unsolved.push(i);
+    const n = unsolved.length ? unsolved[Math.floor(Math.random()*unsolved.length)] : 1+Math.floor(Math.random()*100);
+    openLevel(n);
+  });
+  $('#search').addEventListener('input', (e)=>{ renderGrid(e.target.value); });
+  $('#btn-export').addEventListener('click', exportProgress);
+  $('#btn-import').addEventListener('click', ()=> $('#file-import').click());
+  $('#file-import').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(f) importProgress(f); e.target.value=''; });
+  $('#btn-theme').addEventListener('click', ()=>{ state.progress.theme = state.progress.theme==='light' ? 'dark' : 'light'; saveProgress(); applyTheme(); });
+
+  // Init
+  applyTheme();
+  renderGrid('');
+})();
+</script></body>
+</html>
